@@ -24,9 +24,12 @@ const stage = new Stage([gptScene, drawScene])
 bot.use(session())
 bot.use(stage.middleware());
 // bot.use(isSubMiddleware());
-bot.command('gpt', isActiveSubscriptionMiddleware, gpt)
-bot.command('circle', isActiveSubscriptionMiddleware, circle)
-bot.command('draw', isActiveSubscriptionMiddleware, draw)
+// bot.command('gpt', isActiveSubscriptionMiddleware, gpt)
+// bot.command('circle', isActiveSubscriptionMiddleware, circle)
+// bot.command('draw', isActiveSubscriptionMiddleware, draw)
+bot.command('gpt', gpt)
+bot.command('circle', circle)
+bot.command('draw', draw)
 
 
 bot.command('adminSubscribe', async (ctx) => {
