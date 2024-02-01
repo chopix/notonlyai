@@ -16,23 +16,19 @@ Subscribers.init(
       allowNull: false,
       field: 'tg_id'
     },
-    period: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
     active: {
       type: DataTypes.BOOLEAN,
       allowNull: false
     },
-    start: {
-      type: DataTypes.DATE,
-      defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
-      allowNull: false,
+    type: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 0,
     },
-    created_at: {
-      type: DataTypes.DATE,
-      defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
-      allowNull: false,
+    start: {
+      type: DataTypes.STRING,
+      defaultValue: '0',
+      allowNull: true,
     },
   },
   {

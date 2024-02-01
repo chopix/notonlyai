@@ -1,5 +1,4 @@
 import {Composer} from "telegraf";
-import isSub from "../helpers/isSub.js";
 import pool from '../config/mysql.js'
 import {sendErrorMessage, sendTokenExpiredMessage} from "../helpers/errorAndTokensExpired.js";
 import {reviseMessage} from "../messages/revise.js";
@@ -7,7 +6,6 @@ import {reviseMessage} from "../messages/revise.js";
 const composer = Composer()
 
 composer.command('revise', async (ctx) => {
-    await isSub(ctx)
     const chatId = ctx.from.id;
 
     pool.query(

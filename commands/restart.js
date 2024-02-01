@@ -1,5 +1,4 @@
 import {Composer} from "telegraf";
-import isSub from "../helpers/isSub.js";
 import {successMessage} from "../messages/restart.js";
 import {errorMessage} from "../messages/global.js";
 import pool from "../config/mysql.js";
@@ -13,7 +12,6 @@ const composer = new Composer()
 
 composer.command('restart', async (ctx) => {
     const chatId = ctx.from.id
-    await isSub(ctx);
     pool.query(
         "SELECT * FROM users WHERE `tg_id`=?", [chatId.toString()],
         function(err, result) {

@@ -1,5 +1,4 @@
 import {Composer} from "telegraf";
-import isSub from "../helpers/isSub.js";
 import {sendErrorMessage, sendTokenExpiredMessage} from "../helpers/errorAndTokensExpired.js";
 import {selectTaskMessage, sendMessageMessage} from "../messages/gpt.js";
 import pool from '../config/mysql.js'
@@ -22,7 +21,6 @@ composer.action('gpt back', async (ctx) => gptBack(ctx))
 
 
 composer.command('gpt', async (ctx) => {
-    await isSub(ctx)
     const chatId = ctx.from.id;
 
     const user = await User.findOne({

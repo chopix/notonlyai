@@ -1,15 +1,12 @@
 import {Composer} from "telegraf";
 import {sendErrorMessage} from "../helpers/errorAndTokensExpired.js";
 import {alreadyGiftTakenMessage, freeSubscriptionMessage} from "../messages/free.js";
-import isSub from "../helpers/isSub.js";
 import pool from '../config/mysql.js'
 
 const composer = new Composer()
 
 
 composer.command('free', async (ctx) => {
-
-    await isSub(ctx)
     const chatId = ctx.from.id;
 
     pool.query(

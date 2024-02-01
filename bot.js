@@ -13,12 +13,19 @@ import sendMessagesToAllUsers from "./helpers/sendMessagesToAllUsers.js";
 import draw from "./commands/draw.js";
 import {drawScene} from "./scene/draw.js";
 import profile from "./commands/profile.js";
+import subscribe from "./commands/subscribe.js";
+import isSubMiddleware from "./middlewares/isSubMiddleware.js";
+import isActiveSubscriptionMiddleware from "./middlewares/isActiveSubscriptionMiddleware.js";
 
 const bot = new Telegraf(process.env.TOKEN)
 
 const stage = new Stage([gptScene, drawScene])
 bot.use(session())
 bot.use(stage.middleware());
+bot.use(isSubMiddleware());
+bot.command('gpt', isActiveSubscriptionMiddleware, gpt)
+bot.command('circle', isActiveSubscriptionMiddleware, circle)
+bot.command('draw', isActiveSubscriptionMiddleware, draw)
 
 
 sequelize.sync();
@@ -28,7 +35,7 @@ cron.schedule('0 0 * * *', async () => {
   await sendMessagesToAllUsers(bot)
 });
 
-bot.use(start, restart, circle, gpt, draw, profile)
+bot.use(start, restart, profile, subscribe)
 
 bot.launch()
 

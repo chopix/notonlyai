@@ -1,5 +1,4 @@
 import {Composer} from "telegraf";
-import isSub from "../helpers/isSub.js";
 import pool from './../config/mysql.js'
 import {describeImageMessage} from "../messages/draw.js";
 import {errorMessage, tokensExpiredMessage} from '../messages/global.js'
@@ -12,7 +11,6 @@ const composer = new Composer()
 
 
 composer.command('draw', async (ctx) => {
-    await isSub(ctx)
     const chatId = ctx.from.id;
     const user = sendErrorMessage(ctx, chatId)
     const subscriber = sendTokenExpiredMessage(ctx,chatId)
