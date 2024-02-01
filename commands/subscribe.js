@@ -4,26 +4,37 @@ import {sendErrorMessage} from "../helpers/errorAndTokensExpired.js";
 import {subscribeMessage} from "../messages/subscribe.js";
 import {User} from "../models/User.js";
 import 'dotenv/config'
+import {Subscribers} from "../models/Subscribers.js";
 
 const composer = new Composer()
 
 
 composer.action('sub 1', async (ctx) => {
+  console.log('213')
   const invoice = {
     provider_token: process.env.PAYMENTS_KEY, // Replace with your provider token
     start_parameter: 'invoice123',
-    title: 'Example Invoice',
-    description: 'This is a sample invoice description',
+    title: 'GPT 3.5',
+    description: 'Безлимитное количество запросов GPT 3.5 - 350₽/месяц',
     currency: 'RUB',
     prices: [
-      { label: 'Product 1', amount: 10000 }, // Amount is in cents
+      { label: 'Product 1', amount: 35000 }, // Amount is in cents
     ],
     payload: 'custom_payload',
   };
 
-  // Send invoice
   ctx.replyWithInvoice(invoice);
+  ctx.type = 1;
 })
+
+composer.on('successful_payment', async (ctx) => {
+  const tgId = ctx.from.id;
+  Subscribers.update({type: ctx.type, start: Date.now(), active: 1}, {
+    where: {tgId: tgId}
+  })
+  ctx.reply('Оплата прошла успешно')
+})
+
 
 
 composer.command('subscribe', async (ctx) => {
