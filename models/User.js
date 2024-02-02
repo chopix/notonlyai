@@ -34,6 +34,12 @@ User.init(
       allowNull: false,
       field: 'is_admin'
     },
+    dalleRequestsCount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false,
+      field: 'dalle_requests_count'
+    },
     freeRequests: {
       type: DataTypes.INTEGER,
       defaultValue: 0,

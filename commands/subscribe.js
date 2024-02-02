@@ -10,7 +10,6 @@ const composer = new Composer()
 
 
 composer.action('sub 1', async (ctx) => {
-  console.log('213')
   const invoice = {
     provider_token: process.env.PAYMENTS_KEY, // Replace with your provider token
     start_parameter: 'invoice123',
@@ -27,9 +26,76 @@ composer.action('sub 1', async (ctx) => {
   ctx.type = 1;
 })
 
+composer.action('sub 2', async (ctx) => {
+  const invoice = {
+    provider_token: process.env.PAYMENTS_KEY, // Replace with your provider token
+    start_parameter: 'invoice1234',
+    title: 'Безлим GPT 3.5 + GPT 4',
+    description: 'Безлим GPT 3.5 + GPT 4 - 550₽/месяц',
+    currency: 'RUB',
+    prices: [
+      { label: 'Product 2', amount: 55000 }, // Amount is in cents
+    ],
+    payload: 'custom_payload',
+  };
+
+  ctx.replyWithInvoice(invoice);
+  ctx.type = 2;
+})
+
+composer.action('sub 3', async (ctx) => {
+  const invoice = {
+    provider_token: process.env.PAYMENTS_KEY, // Replace with your provider token
+    start_parameter: 'invoice12345',
+    title: 'Midjourney + DALL-E 3',
+    description: 'Midjourney + DALL-E 3 - 1250₽/месяц (лимит 100 запросов)',
+    currency: 'RUB',
+    prices: [
+      { label: 'Product 3', amount: 125000 }, // Amount is in cents
+    ],
+    payload: 'custom_payload',
+  };
+
+  ctx.replyWithInvoice(invoice);
+  ctx.type = 3;
+})
+
+composer.action('sub 4', async (ctx) => {
+  const invoice = {
+    provider_token: process.env.PAYMENTS_KEY, // Replace with your provider token
+    start_parameter: 'invoice12367',
+    title: 'GPT 3.5 + GPT 4 + Midjourney + DALL-E 3 ',
+    description: 'GPT 3.5 + GPT 4 + Midjourney + DALL-E 3  - 2500₽/месяц (GPT безлимит, Midjourney + DALL-E 3 - 150 картинок)',
+    currency: 'RUB',
+    prices: [
+      { label: 'Product 4', amount: 250000 }, // Amount is in cents
+    ],
+    payload: 'custom_payload',
+  };
+
+  ctx.replyWithInvoice(invoice);
+  ctx.type = 4;
+})
+
+composer.on('pre_checkout_query', async (ctx) => {
+  ctx.answerPreCheckoutQuery(true);
+
+})
+
 composer.on('successful_payment', async (ctx) => {
   const tgId = ctx.from.id;
-  Subscribers.update({type: ctx.type, start: Date.now(), active: 1}, {
+  let currentTimeMillis = Date.now();
+  let currentDate = new Date(currentTimeMillis);
+
+  let year = currentDate.getFullYear();
+  let month = ('0' + (currentDate.getMonth() + 1)).slice(-2); // добавляем ноль перед месяцем
+  let day = ('0' + currentDate.getDate()).slice(-2); // добавляем ноль перед днем
+  let hours = ('0' + currentDate.getHours()).slice(-2); // добавляем ноль перед часами
+  let minutes = ('0' + currentDate.getMinutes()).slice(-2); // добавляем ноль перед минутами
+  let seconds = ('0' + currentDate.getSeconds()).slice(-2); // добавляем ноль перед секундами
+
+  let formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  await Subscribers.update({type: ctx.type, start: formattedDate}, {
     where: {tgId: tgId}
   })
   ctx.reply('Оплата прошла успешно')

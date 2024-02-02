@@ -2,7 +2,7 @@ import {subscribeKeyboardMessage, subscribeLink, subscribeMessage} from "../mess
 
 export default function () {
   return async (ctx, next) => {
-    let isSub = await ctx.telegram.getChatMember(process.env.CHANNEL_ID, ctx.chat.id)
+    let isSub = await ctx.telegram.getChatMember(process.env.CHANNEL_ID, ctx.from.id)
     if (isSub.status === "left") {
 
       const keyboard = {

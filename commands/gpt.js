@@ -1,7 +1,6 @@
 import {Composer} from "telegraf";
 import {sendErrorMessage, sendTokenExpiredMessage} from "../helpers/errorAndTokensExpired.js";
 import {selectTaskMessage, sendMessageMessage} from "../messages/gpt.js";
-import pool from '../config/mysql.js'
 import {WizardScene} from "telegraf/scenes";
 import {gptBack, gptFour, gptPlan, gptPost, gptRequest, gptStop, gptStory, gptThree} from "../actions/gpt.js";
 import {User} from "../models/User.js";

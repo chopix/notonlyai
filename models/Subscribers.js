@@ -16,10 +16,6 @@ Subscribers.init(
       allowNull: false,
       field: 'tg_id'
     },
-    active: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false
-    },
     type: {
       type: DataTypes.INTEGER,
       allowNull: true,

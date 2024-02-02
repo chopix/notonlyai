@@ -18,8 +18,29 @@ composer.command('circle', async (ctx) => {
     if(!user) {
       return sendErrorMessage(ctx)
     }
-
-
+    await ctx.scene.enter('circleScene')
 })
+
+// composer.on('video', async (ctx) => {
+//   if(ctx.message.video) {
+//     const video = ctx.message.video;
+//
+//     const fileId = video.file_id;
+//     const file = await ctx.telegram.getFile(fileId);
+//
+//     const videoBuffer = await ctx.telegram.getFileStream(fileId);
+//
+//     const fileName = `video_${Date.now()}.mp4`;
+//     const filePath = `./downloads/${fileName}`;
+//
+//     const writeStream = fs.createWriteStream(filePath);
+//     videoBuffer.pipe(writeStream);
+//
+//     writeStream.on('finish', () => {
+//       console.log(`Видео сохранено: ${filePath}`);
+//       ctx.reply('Видео успешно сохранено!');
+//     });
+//   }
+// })
 
 export default composer;

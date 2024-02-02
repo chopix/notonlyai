@@ -8,7 +8,7 @@ import {dalleStop} from "../actions/draw.js";
 
 export const drawScene = new WizardScene(
   'drawScene', async (ctx) => {
-    const tgId = ctx.from.id;
+    const tgId = ctx.from.id
     await ctx
       .reply(describeImageMessage, {
           parse_mode: "html",
@@ -41,7 +41,8 @@ export const drawScene = new WizardScene(
       { dalleMessages: JSON.stringify(currentMessages) },
       { where: { tgId: tgId } }
     );
-    await ctx.scene.leave()
+    await User.increment('dalleRequestsCount', {by: 1, where: {tgId: tgId}})
+    await ctx.scene.leave();
   }
 )
 
