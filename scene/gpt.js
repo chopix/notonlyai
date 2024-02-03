@@ -6,6 +6,7 @@ import {sendTokenExpiredMessage} from "../helpers/errorAndTokensExpired.js";
 import {Subscribers} from "../models/Subscribers.js";
 import {User} from "../models/User.js";
 import {sequelize} from "../config/sequelize.js";
+import {subscribeSecondMessage} from "../messages/start.js";
 
 const keyboard = {
   reply_markup: {

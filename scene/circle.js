@@ -1,79 +1,124 @@
 import {WizardScene} from "telegraf/scenes";
 import 'dotenv/config'
-import axios from "axios";
+import ffmpeg from 'fluent-ffmpeg';
+import request from "request";
+import path from 'path'
 import fs from "fs";
-import path from 'path';
+
+// Use import.meta.url to get the current module's URL
+const __filename = new URL(import.meta.url).pathname;
+// Use path.dirname to get the directory name
+const __dirname = path.dirname(__filename);
+
+
+const download = (url, filePath, callback) => {
+  request({
+    uri: url,  // Use uri property instead of passing url directly
+    method: 'GET',
+  })
+    .on('response', (response) => {
+      if (response.statusCode === 200) {
+        // Pipe the response to the file stream
+        response.pipe(fs.createWriteStream(filePath).on('close', callback));
+      } else {
+        console.error('Failed to download the file. HTTP Status Code:', response.statusCode);
+        callback(new Error('Failed to download the file.'));
+      }
+    })
+    .on('error', (err) => {
+      console.error('Error during file download:', err);
+      callback(err);
+    });
+};
 
 
 export const circleScene = new WizardScene('circleScene', async (ctx) => {
-  await ctx.reply('Скиньте видео, которое Вы хотите преобразовать в кружок 📹')
-  await ctx.wizard.next()
+  await ctx.reply('Скиньте видео, которое Вы хотите преобразовать в кружок 📹');
+  await ctx.wizard.next();
 }, async (ctx) => {
   if (ctx.message && ctx.message.animation) {
-    const videoFileId = ctx.message.animation.file_id;
+    const fileId = ctx.message.animation.file_id;
 
-    // Get the file path using getFile method
-    const file = await ctx.telegram.getFile(videoFileId);
-    const filePath = file.file_path;
+    let start = Math.min(ctx.message.animation.width, ctx.message.animation.height);
 
-    // Get the direct link to the file
-    const fileLink = `https://api.telegram.org/file/bot${process.env.TOKEN}/${filePath}`;
-
-    // Generate the download path
-    const downloadPath = path.join(path.dirname, 'path', 'to', 'save', `${videoFileId}.mp4`);
-
-    // Ensure the directory exists
-    const directory = path.dirname(downloadPath);
-    if (!fs.existsSync(directory)) {
-      fs.mkdirSync(directory, { recursive: true });
+    if (start > 600) {
+      start = 600;
     }
 
-    // Download and save the video
-    const response = await axios({
-      method: 'get',
-      url: fileLink,
-      responseType: 'stream',
+    ctx.telegram.getFileLink(fileId).then((resp) => {
+      download(
+        resp,
+        path.join(
+          __dirname,
+          `../data/circles/${fileId}.mp4`
+        ),
+        () => {
+          setTimeout(() => {
+            const command = ffmpeg(
+              path.join(
+                __dirname,
+                `../data/circles/${fileId}.mp4`
+              )
+            );
+
+            // Установка размеров кадра
+            command.size(start + "x" + start);
+
+            // Вырезание видео
+            command.outputOptions([
+              "-vf",
+              "crop=" + start + ":" + start,
+            ]);
+
+            // Назначение пути к выходному файлу
+            command.save(
+              path.join(
+                __dirname,
+                `../data/circles/${fileId}__crop.mp4`
+              )
+            );
+
+            let ctd = 0;
+
+            if (
+              fs.existsSync(
+                path.join(
+                  __dirname,
+                  `../data/circles/${fileId}__crop.mp4`
+                )
+              )
+            ) {
+              return;
+            }
+
+            command
+              .on("end", () => {
+                if (ctd == 1) {
+                  return;
+                }
+
+                ctd = 1;
+
+                console.log("Вырезание квадрата завершено");
+
+                return ctx
+                  .replyWithVideoNote(
+                    path.join(
+                      __dirname,
+                      `../data/circles/${fileId}__crop.mp4`
+                    )
+                  );
+              })
+              .on("error", (err) => {
+                console.error("Ошибка при обрезке видео:", err);
+              })
+              .run();
+          }, 250);
+        }
+      );
     });
-
-    const writer = fs.createWriteStream(downloadPath);
-    response.data.pipe(writer);
-
-    // Wait for the download to finish
-    await new Promise((resolve, reject) => {
-      writer.on('finish', resolve);
-      writer.on('error', reject);
-    });
-
-    // Reply with a video note
-    await ctx.replyWithVideoNote({ source: fs.createReadStream(downloadPath) });
-
-    // Optionally, you can delete the downloaded file if needed
-    fs.unlinkSync(downloadPath);
   } else {
-    // Если не видео, повторяем запрос
     await ctx.reply('Пожалуйста, отправьте видео.');
   }
-})
+});
 
-
-// circleScene.on('video', async (ctx) => {
-//   const video = ctx.message.video;
-//
-//   const fileId = video.file_id;
-//   const file = await ctx.telegram.getFile(fileId);
-//
-//   const videoBuffer = await ctx.telegram.getFileStream(fileId);
-//
-//   const dateNow = Date.now();
-//
-//   const fileName = `video_${dateNow}.mp4`;
-//   const filePath = `./downloads/${fileName}`;
-//
-//   const writeStream = fs.createWriteStream(filePath);
-//   videoBuffer.pipe(writeStream);
-//
-//   writeStream.on('finish', () => {
-//     console.log(`Видео сохранено: ${filePath}`);
-//     ctx.reply('Видео успешно сохранено!');
-//   });
-// })
