@@ -1,6 +1,5 @@
 import {Composer} from "telegraf";
 import {sendErrorMessage} from "../helpers/errorAndTokensExpired.js";
-import pool from '../config/mysql.js'
 import frame from "../helpers/frame.js";
 import moment from 'moment'
 import {User} from "../models/User.js";

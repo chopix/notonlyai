@@ -26,27 +26,9 @@ export const gptScene = new WizardScene(
         tgId: tgId
       }
     });
-    if (ctx.session.gptModel === 'gpt-4-0125-preview' && subscriber.type == 0 || ctx.session.gptModel === 'gpt-4-0125-preview' && subscriber.type == 3) {
-      await ctx.reply('Вы не можете использовать модель GPT-4 без подписки.', {
-        parse_mode: 'HTML',
-        reply_markup: {
-          inline_keyboard: [
-            [
-              {text: 'Назад ⬅️', callback_data: 'gpt back'},
-              {text: 'Купить подписку 💸', callback_data: 'subscription buy'}
-            ],
-          ],
-        },
-      })
-      await ctx.scene.leave();
-    } else if (subscriber.type === 0 || subscriber.type === 3) {
-      const user = await User.findOne({
-        where: {
-          tgId: tgId
-        }
-      })
-      if (user.freeRequests >= 4 && subscriber.type !== 2 || user.freeRequests >= 4 && subscriber.type !== 4) {
-        await ctx.reply(freeRequestsExpired, {
+    if(ctx.session.gptModel === 'gpt-4-0125-preview') {
+      if(subscriber.type === 0 || subscriber.type === 3) {
+        await ctx.reply('Вы не можете использовать модель GPT-4 без подписки.', {
           parse_mode: 'HTML',
           reply_markup: {
             inline_keyboard: [
@@ -57,20 +39,33 @@ export const gptScene = new WizardScene(
             ],
           },
         })
-        await ctx.scene.leave()
+        return ctx.scene.leave();
       }
-    } else {
-      if (subscriber.type == 0 || subscriber.type == 3) {
-        await ctx.reply(sendMessageMessage, {
-          parse_mode: "html",
-        })
-      } else {
-        await ctx.reply(sendSubcriberMessageMessage, {
-          parse_mode: "html",
-        })
-      }
-      return ctx.wizard.next()
     }
+    if(subscriber.type === 0 || subscriber.type === 1) {
+      const user = await User.findOne({
+        where: {
+          tgId: tgId
+        }
+      })
+      if(user.freeRequests >= 4) {
+        await ctx.reply(freeRequestsExpired, {
+            parse_mode: 'HTML',
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {text: 'Назад ⬅️', callback_data: 'gpt back'},
+                  {text: 'Купить подписку 💸', callback_data: 'subscription buy'}
+                ],
+              ],
+            },
+          })
+          return ctx.scene.leave()
+      }
+    }
+
+    await ctx.reply('Введите промпт')
+    await ctx.wizard.next()
   }, async (ctx) => {
     const tgId = ctx.from.id
     const message = ctx.message.text;
@@ -79,40 +74,6 @@ export const gptScene = new WizardScene(
         tgId: tgId
       }
     })
-    if (subscriber.type !== 2 || subscriber.type !== 4) {
-      const user = await User.findOne({
-        where: {
-          tgId: tgId
-        }
-      })
-      if (user.freeRequests >= 4 && subscriber.type == 0 || user.freeRequests >= 4 && subscriber.type == 3) {
-        await ctx.reply(freeRequestsExpired, {
-          parse_mode: 'HTML',
-          reply_markup: {
-            inline_keyboard: [
-              [
-                {text: 'Назад ⬅️', callback_data: 'gpt back'},
-                {text: 'Купить подписку 💸', callback_data: 'subscription buy'}
-              ],
-            ],
-          },
-        })
-        await ctx.scene.leave()
-      }
-    } else if (ctx.session.gptModel === 'gpt-4-0125-preview' && subscriber.type !== 2 || ctx.session.gptModel === 'gpt-4-0125-preview' && subscriber.type !== 4) {
-      await ctx.reply('Вы не можете использовать модель GPT-4 без подписки.', {
-        parse_mode: "HTML",
-        reply_markup: {
-          inline_keyboard: [
-            [
-              {text: 'Назад ⬅️', callback_data: 'gpt back'},
-              {text: 'Купить подписку 💸', callback_data: 'subscription buy'}
-            ],
-          ],
-        },
-      })
-      await ctx.scene.leave()
-    }
     const {message_id} = await ctx.reply('Ваш ответ генерируется...')
     const chatCompletion = await openai.chat.completions.create({
       messages: [{role: 'user', content: setSuitableMessageContent(ctx, message)}],
@@ -124,7 +85,7 @@ export const gptScene = new WizardScene(
         0,
         res.choices[0].message.content,
         keyboard
-      );
+      )
       const existingMessages = await User.findOne({
         attributes: ['gptMessages'],
         where: {tgId: tgId},
@@ -139,8 +100,123 @@ export const gptScene = new WizardScene(
       );
       if(subscriber.type == 0 || subscriber.type == 3) await User.increment('freeRequests', {by: 1, where: {tgId: tgId}})
     })
-
   }
+
+  //   if (ctx.session.gptModel === 'gpt-4-0125-preview' && subscriber.type == 0 || ctx.session.gptModel === 'gpt-4-0125-preview' && subscriber.type == 3) {
+  //     await ctx.reply('Вы не можете использовать модель GPT-4 без подписки.', {
+  //       parse_mode: 'HTML',
+  //       reply_markup: {
+  //         inline_keyboard: [
+  //           [
+  //             {text: 'Назад ⬅️', callback_data: 'gpt back'},
+  //             {text: 'Купить подписку 💸', callback_data: 'subscription buy'}
+  //           ],
+  //         ],
+  //       },
+  //     })
+  //     await ctx.scene.leave();
+  //   } else if (subscriber.type === 0 || subscriber.type === 3) {
+  //     const user = await User.findOne({
+  //       where: {
+  //         tgId: tgId
+  //       }
+  //     })
+  //     if (user.freeRequests >= 4 && subscriber.type !== 2 || user.freeRequests >= 4 && subscriber.type !== 4) {
+  //       await ctx.reply(freeRequestsExpired, {
+  //         parse_mode: 'HTML',
+  //         reply_markup: {
+  //           inline_keyboard: [
+  //             [
+  //               {text: 'Назад ⬅️', callback_data: 'gpt back'},
+  //               {text: 'Купить подписку 💸', callback_data: 'subscription buy'}
+  //             ],
+  //           ],
+  //         },
+  //       })
+  //       await ctx.scene.leave()
+  //     }
+  //   } else {
+  //     if (subscriber.type == 0 || subscriber.type == 3) {
+  //       await ctx.reply(sendMessageMessage, {
+  //         parse_mode: "html",
+  //       })
+  //     } else {
+  //       await ctx.reply(sendSubcriberMessageMessage, {
+  //         parse_mode: "html",
+  //       })
+  //     }
+  //     return ctx.wizard.next()
+  //   }
+  // }, async (ctx) => {
+  //   const tgId = ctx.from.id
+  //   const message = ctx.message.text;
+  //   const subscriber = await Subscribers.findOne({
+  //     where: {
+  //       tgId: tgId
+  //     }
+  //   })
+  //   if (subscriber.type !== 2 || subscriber.type !== 4) {
+  //     const user = await User.findOne({
+  //       where: {
+  //         tgId: tgId
+  //       }
+  //     })
+  //     if (user.freeRequests >= 4 && subscriber.type == 0 || user.freeRequests >= 4 && subscriber.type == 3) {
+  //       await ctx.reply(freeRequestsExpired, {
+  //         parse_mode: 'HTML',
+  //         reply_markup: {
+  //           inline_keyboard: [
+  //             [
+  //               {text: 'Назад ⬅️', callback_data: 'gpt back'},
+  //               {text: 'Купить подписку 💸', callback_data: 'subscription buy'}
+  //             ],
+  //           ],
+  //         },
+  //       })
+  //       await ctx.scene.leave();
+  //     }
+  //   } else if (ctx.session.gptModel === 'gpt-4-0125-preview' && subscriber.type !== 2 || ctx.session.gptModel === 'gpt-4-0125-preview' && subscriber.type !== 4) {
+  //     await ctx.reply('Вы не можете использовать модель GPT-4 без подписки.', {
+  //       parse_mode: "HTML",
+  //       reply_markup: {
+  //         inline_keyboard: [
+  //           [
+  //             {text: 'Назад ⬅️', callback_data: 'gpt back'},
+  //             {text: 'Купить подписку 💸', callback_data: 'subscription buy'}
+  //           ],
+  //         ],
+  //       },
+  //     })
+  //     await ctx.scene.leave()
+  //   }
+  //   const {message_id} = await ctx.reply('Ваш ответ генерируется...')
+  //   const chatCompletion = await openai.chat.completions.create({
+  //     messages: [{role: 'user', content: setSuitableMessageContent(ctx, message)}],
+  //     model: ctx.session.gptModel,
+  //   }).then(async res => {
+  //     await ctx.telegram.editMessageText(
+  //       ctx.chat.id,
+  //       message_id,
+  //       0,
+  //       res.choices[0].message.content,
+  //       keyboard
+  //     );
+  //     const existingMessages = await User.findOne({
+  //       attributes: ['gptMessages'],
+  //       where: {tgId: tgId},
+  //     })
+  //
+  //     const currentMessages = JSON.parse(existingMessages.gptMessages);
+  //     currentMessages.push(message);
+  //
+  //     await User.update(
+  //       {gptMessages: JSON.stringify(currentMessages)},
+  //       {where: {tgId: tgId}}
+  //     );
+  //     if(subscriber.type == 0 || subscriber.type == 3) await User.increment('freeRequests', {by: 1, where: {tgId: tgId}})
+  //   })
+  //
+  // }
 )
 
 // export const gptScene = new WizardScene(

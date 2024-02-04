@@ -1,5 +1,4 @@
 import {Composer} from "telegraf";
-import pool from './../config/mysql.js'
 import {describeImageMessage} from "../messages/draw.js";
 import {errorMessage, tokensExpiredMessage} from '../messages/global.js'
 import {sendErrorMessage, sendTokenExpiredMessage} from "../helpers/errorAndTokensExpired.js";

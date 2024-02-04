@@ -25,14 +25,12 @@ const bot = new Telegraf(process.env.TOKEN)
 const stage = new Stage([gptScene, drawScene, circleScene])
 bot.use(session())
 bot.use(stage.middleware());
-bot.use(isSubMiddleware());
 
 
-bot.command('gpt', isActiveSubscriptionMiddleware, gpt)
-bot.command('circle', isActiveSubscriptionMiddleware, circle)
-bot.command('draw', isActiveSubscriptionMiddleware, draw)
+// bot.command('gpt', isActiveSubscriptionMiddleware, gpt)
+// bot.command('circle', isActiveSubscriptionMiddleware, circle)
+// bot.command('draw', isActiveSubscriptionMiddleware, draw)
 
-bot.use(gpt, circle, draw);
 
 
 bot.command('adminSubscribe', async (ctx) => {
@@ -68,7 +66,8 @@ cron.schedule('0 0 1 * *', async () => {
   }
 });
 
-bot.use(start, restart, profile, subscribe)
+bot.use(start, restart, profile, subscribe, gpt, circle, draw)
+bot.use(isSubMiddleware());
 
 bot.launch();
 

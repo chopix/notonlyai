@@ -1,5 +1,4 @@
 import {Composer} from "telegraf";
-import pool from '../config/mysql.js'
 import {sendErrorMessage} from "../helpers/errorAndTokensExpired.js";
 import {subscribeMessage} from "../messages/subscribe.js";
 import {User} from "../models/User.js";
