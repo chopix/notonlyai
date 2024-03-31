@@ -1,4 +1,4 @@
-import {session, Telegraf} from "telegraf";
+import {Markup, session, Telegraf} from "telegraf";
 import 'dotenv/config'
 import start from "./commands/start.js";
 import restart from "./commands/restart.js";
@@ -19,6 +19,8 @@ import isActiveSubscriptionMiddleware from "./middlewares/isActiveSubscriptionMi
 import {Subscribers} from "./models/Subscribers.js";
 import {User} from "./models/User.js";
 import {circleScene} from "./scene/circle.js";
+import express from "express";
+import * as ngrok from "ngrok";
 
 const bot = new Telegraf(process.env.TOKEN)
 
@@ -68,6 +70,56 @@ cron.schedule('0 0 1 * *', async () => {
 
 bot.use(start, restart, profile, subscribe, gpt, circle, draw)
 bot.use(isSubMiddleware());
+
+const app = express();
+app.post('/webhook', (req, res) => {
+  try {
+    console.log(req.body)
+    console.log(req.headers)
+    bot.telegram.sendMessage(740207590, `Платеж успешно выполнен.`)
+    res.status(200).send('OK');
+    // console.log(er)
+  } catch (e) {console.log(e)}
+});
+import { WalletPaySDK } from 'wallet-pay-sdk';
+import {ECurrencyCode} from "wallet-pay-sdk/lib/src/types.js";
+const wp = new WalletPaySDK({
+  apiKey: 'M4DwQAaQ7THbiAoaqzf25ee24oQygNF4ytJ0',
+  timeoutSeconds: 60 * 60 * 3, // Default value = Order TTL, if the order is not paid within the timeout period
+});
+
+import crypto from 'crypto'
+
+bot.command('pay', async (ctx) => {
+  await ctx.reply('payment')
+  const newOrder = {
+    amount: {
+      currencyCode: ECurrencyCode.USDT,
+      amount: '0.01',
+    },
+    description: 'My first order', // Description of the order
+    returnUrl: 'https://example.com', //  Url to redirect after paying order
+    failReturnUrl: 'https://example.com', // Url to redirect after unsuccessful order completion (expiration/cancelation/etc)
+    externalId: crypto.randomUUID(),
+    // timeoutSeconds: 200000; // If you want, you can override the value of the "timeoutSeconds" variable here
+    customerTelegramUserId: ctx.from.id, // The customer's telegram id (User_id)
+  }
+
+  const result = await wp.createOrder(newOrder).then(async res => {
+    console.log(res)
+    await ctx.reply(`payment`, Markup.inlineKeyboard([
+      Markup.button.url('pay', res.response.data.payLink)
+    ]))
+  })
+})
+
+// Запуск сервера на порте 3000
+app.listen(5124, () => {
+  console.log('Сервер запущен на порту 5124');
+  // ngrok.connect(5124).then(ngrokUrl => {
+  //   console.log(`ngrok ${ngrokUrl}`)
+  // });
+});
 
 bot.launch();
 

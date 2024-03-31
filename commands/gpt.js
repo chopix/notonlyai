@@ -6,6 +6,7 @@ import {gptBack, gptFour, gptPlan, gptPost, gptRequest, gptStop, gptStory, gptTh
 import {User} from "../models/User.js";
 import isActiveSubscriptionMiddleware from "../middlewares/isActiveSubscriptionMiddleware.js";
 
+
 const composer = new Composer()
 
 
@@ -64,6 +65,11 @@ composer.action('gpt 3.5', async (ctx) => gptThree(ctx))
 composer.action('gpt 4', async (ctx) => gptFour(ctx))
 composer.action('gpt stop', async (ctx) => gptStop(ctx))
 composer.action('gpt back', async (ctx) => gptBack(ctx))
+
+
+
+
+
 
 
 
